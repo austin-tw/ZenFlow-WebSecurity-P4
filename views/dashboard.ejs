@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+
+    <img class="center" src="/img/run.jpg" alt="three people running">
+
+    <h1>Welcome <%= username %>!</h1>
+    <h3>
+        Role:<%= role %>
+    </h3>
+    <a href="/logout">Logout</a>
+
+    <div class="stats">
+        <h2>Completion Stats</h2>
+        <ul>
+            <li>Number of meditations: 12</li>
+            <li>Number of yoga sessions: 36</li>
+            <li>Number of workouts: 27</li>
+        </ul>
+    </div>
+
+    <div class="activity">
+        <h2>Recent Activity</h2>
+        <ul>
+            <li>Created new goal "Run Marathon" 2 days ago</li>
+            <li>Completed task "Meditation" 1 day ago</li>
+            <li>Updated goal "Tennis" 1 hour ago</li>
+        </ul>
+    </div>
+
+
+    </html>
+
+    <%- include('partials/footer') %>

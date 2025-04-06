@@ -1,0 +1,53 @@
+Part B, step 3 (input validation technique)
+const { body, validationResult } = require("express-validator");
+
+app.post(
+  "/update-profile",
+  ensureSuperUser,
+  [
+    body("screenName")
+      .trim()
+      .escape()
+      .matches(/^[A-Za-z0-9]{3,50}$/)
+      .withMessage(
+        "Screen name must be 3-50 characters and can only contain letters and numbers"
+      ),
+
+    body("email")
+      .trim()
+      .normalizeEmail()
+      .isEmail()
+      .withMessage("Invalid email format"),
+
+    body("bio")
+      .optional()
+      .trim()
+      .escape()
+      .isLength({ max: 500 })
+      .withMessage("Bio must not exceed 500 characters"),
+  ],
+
+Part B, step 4 (Output Encoding Implementation)
+
+I'm using EJS as the templating engine, which automatically escapes content by default when using the <%= %> tags.
+
+
+
+
+
+=====
+security-check.yml GitHub Actions Workflow:
+Runs once a week (every Sunday at midnight)
+Simply checks your dependencies for security issues
+Reports any vulnerabilities found
+Local Command at package.json:
+"security": "npm audit"
+Added npm run security command to run security checks locally
+To use this:
+Local Security Check:
+Apply to app.js
+Run
+GitHub Actions:
+The workflow will run automatically every Sunday
+You can see the results in your GitHub repository's "Actions" tab
+If any vulnerabilities are found, you'll see them in the workflow logs

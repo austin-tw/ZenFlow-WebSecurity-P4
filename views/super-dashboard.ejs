@@ -1,0 +1,62 @@
+<%- include('partials/header') %>
+
+    <img class="center" src="/img/run.jpg" alt="three people running">
+
+    <h1>Welcome <%= username %>!</h1>
+    <h3 class="red">
+        Role:<%= role %>
+    </h3>
+    <p>Screen Name: <%= screenName %>
+    </p>
+    <p>Email: <%= email %>
+    </p>
+    <p>Bio: <%= bio %>
+    </p>
+    <a href="/logout">Logout</a>
+
+    <h2>User Profile Update</h2>
+    <form method="POST" action="/update-profile" enctype="application/x-www-form-urlencoded">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <label for="screenName">Screen Name (for your app avatar):</label>
+        <input type="text" id="screenName" name="screenName" pattern="[A-Za-z0-9]{3,50}"
+            title="Screen name must be 3-50 characters and can only contain letters and numbers" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="bio">Bio:</label>
+        <input type="text" id="bio" name="bio" class="text-box" pattern="[A-Za-z0-9\s.,!?-]{0,500}"
+            title="Bio must not exceed 500 characters" maxlength="500">
+
+        <input type="submit" value="Update">
+    </form>
+
+    <div class="stats">
+        <h2>Completion Stats</h2>
+        <ul>
+            <li>Number of meditations: 12</li>
+            <li>Number of yoga sessions: 36</li>
+            <li>Number of workouts: 27</li>
+        </ul>
+    </div>
+
+    <div class="activity">
+        <h2>Recent Activity</h2>
+        <ul>
+            <li>Created new goal "Run Marathon" 2 days ago</li>
+            <li>Completed task "Meditation" 1 day ago</li>
+            <li>Updated goal "Tennis" 1 hour ago</li>
+        </ul>
+    </div>
+
+    <div>
+        <h2 class="red">System Settings</h2>
+        <ul>
+            <li><a href="#">Edit system configuration</a></li>
+            <li><a href="#">Backup database</a></li>
+            <li><a href="#">Restore database</a></li>
+            <li><a href="#">Delete database</a></li>
+        </ul>
+    </div>
+
+    <%- include('partials/footer') %>
