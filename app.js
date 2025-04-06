@@ -38,6 +38,7 @@ app.use(
       httpOnly: true, // Prevents JavaScript access
       secure: false, // Set to true in production (requires HTTPS)
       maxAge: 1000 * 60 * 15, // 15 minutes
+      sameSite: "lax", // Add SameSite attribute to prevent CSRF attacks
     },
   })
 );
