@@ -38,7 +38,7 @@ app.use(
       httpOnly: true, // Prevents JavaScript access
       secure: false, // Set to true in production (requires HTTPS)
       maxAge: 1000 * 60 * 15, // 15 minutes
-      sameSite: "lax", // Add SameSite attribute to prevent CSRF attacks
+      sameSite: "lax", // if set to "strict", Google OAuth will stop working, because it needs to redirect to OAuth server and then back, and "strict" will not pass on the cookie.
     },
   })
 );
@@ -114,9 +114,9 @@ passport.use(
           user.loginCount += 1;
 
           // Promote to 'superuser' if login count exceeds threshold
-          if (user.loginCount > 3) {
-            user.role = "superuser";
-          }
+          // if (user.loginCount > 3) {
+          //   user.role = "superuser";
+          // }
         }
         await user.save();
         console.log("User saved successfully:", user);
