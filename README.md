@@ -31,14 +31,11 @@
 ## Part C: Create a New Node.js Project
 
 1. Open a terminal or command prompt.
-2. Create a new directory for your project:
-   ` mkdir google-sso-example`
-   `cd google-sso-example`
-3. Run the following command to create a package.json file: npm init -y
-4. Run the following command to install the required packages:
+2. Create a new directory for your project
+3. Run the following command to install the required packages:
    `npm install express argon2 mongoose body-parser dotenv JSON web token express-session passport passport-google-oauth20 helmet connect-mongo csurf ejs https fs hsts express-validator`
-5. Download the files from the repository and paste into your project folder
-6. Create a .env file including:
+4. Download the files from the repository and paste into your project folder
+5. Create a .env file including:
 
 ```
    JWT_SECRET=(make up your own secret key)
@@ -50,129 +47,97 @@
    PORT=3000
 ```
 
-# Input Validation Implementation
+# Ethical Responsibilities of Security Professionals
 
-I used express-validator to limit the input of:
-Name: 3–50 alphabetic characters
-Email: Follows a standard email format
-Bio: Max 500 characters, no HTML tags and no special characters
+My testing and mitigation efforts align with ethical guidelines in web security, because I only perform testing attacks such as SQL injection, XSS attacks, and automated OWASP Zap attacks on my own website in a local controlled environment. I did not try to attack someone else's website without their permission. I am also aware that performing test attacks on someone else's website without their permission, even if you did not cause any change or damages, is still considered a violation of ethical guidelines.
 
-Sanitization is achieved via the following methods (found in \app.js):
+# Legal Implications of Security Testing
 
-```
-const { body, validationResult } = require("express-validator");
+My web app falls under the legal framework of Canada's Personal Information Protection and Electronic Documents Act (PIPEDA), under which my fictional company is accountable for safeguarding users' personal information. My company must also obtain users' consent to collect such information and make sure it is not used beyond the purposes stated when the information was collected.
 
-app.post(
-"/update-profile",
-ensureSuperUser,
-[
-body("screenName")
-.trim()
-.escape()
-.matches(/^[A-Za-z0-9]{3,50}$/)
-.withMessage(
-"Screen name must be 3-50 characters and can only contain letters and numbers"
-),
+# Security Testing
 
-    body("email")
-      .trim()
-      .normalizeEmail()
-      .isEmail()
-      .withMessage("Invalid email format"),
+I used manual testing, OWASP ZAP, and npm audit to check for vulnerabilities.
 
-    body("bio")
-      .optional()
-      .trim()
-      .escape()
-      .isLength({ max: 500 })
-      .withMessage("Bio must not exceed 500 characters"),
+## Manual Testings:
 
-],
-```
+-SQL injection attack. Tried injecting --, ' OR '1'='1, and " in the form field. All attempts were correctly rejected by pattern limits or properly escaped to prevent malicious code from running.
 
-This ensures injected malicious codes would not be executed.
+-XSS attack. Tried injecting <script>alert("XSS")</script> in form fields. All attempts were correctly rejected by pattern limits or properly escaped to prevent malicious code from running.
 
-# Output Encoding Implementation
+## OWASP Zap:
 
-I used EJS as the templating engine, which automatically escapes content by default when using the <%= %> tags. To ensure injected malicious codes would not be executed.
+Steps:
 
-Example (found in \super-dashboard.ejs):
+1. Started ZAP and selected [Automated Scan]
+2. Entered the URL to attack and clicked [Attack]
+3. Waited for the scan to finish, then checked the report for vulnerabilities
 
-```<h1>Welcome <%= username %>!</h1>
-    <h3 class="red">
-        Role:<%= role %>
-    </h3>
-    <p>Screen Name: <%= screenName %>
-    </p>
-    <p>Email: <%= email %>
-    </p>
-    <p>Bio: <%= bio %>
-    </p>
-    <a href="/logout">Logout</a>
-```
+After running ZAP’s automated test, one vulnerability was found:
+Alert: Cookie without SameSite Attribute
+Alert reference: 10054-1
 
-# Encryption of Sensitive Data
+Description: A cookie was set without the SameSite attribute, which means it could be sent with cross-site requests. The SameSite attribute helps defend against cross-site request forgery, cross-site script inclusion, and timing attacks.
 
-Sensitive data (user's email address and bio) are encrypted before storing in the database with Node's built-in crypto module by:
+Solution: Make sure the SameSite attribute is set to either lax or ideally strict for all cookies.
 
--creating \utils\encryption.js that handles encrypt and decrypt using AES-256-CBC
+## npm audit:
 
--\app.js routes are updated accordingly with encrypt and decrypt methods, for example:
+Steps:
 
-```
-// Superuser-only route
-app.get("/super-dashboard", ensureSuperUser, (req, res) => {
-  // Decrypt sensitive data before sending to template
-  const decryptedEmail = req.user.email ? decrypt(req.user.email) : "";
-  const decryptedBio = req.user.bio ? decrypt(req.user.bio) : "";
-```
+1. In Git Bash, navigated to the project folder and ran `npm audit`
+2. Read through the audit report
 
-# Third-Party Dependency Management
+After running npm audit, a vulnerability was found:
+Package: cookie <0.7.0
+Issue: The cookie package accepts cookie name, path, and domain with out-of-bounds characters
+Advisory: https://github.com/advisories/GHSA-pxg6-pf52-xh8x
 
-Automated updates and regular security audits were implemented by Creating \.github\workflows\security-check.yml for GitHub Actions:
+# Vulnerability Fixes
 
-```
-name: Security Check
+## Alert: Cookie without SameSite Attribute
 
-on:
-  schedule:
-    - cron: "0 0 * * 0" # Run weekly on Sunday at midnight
+To fix the vulnerability, I added `sameSite: "lax"` to the cookie settings in app.js.
+Ideally, it should be set to "strict", but that breaks Google OAuth since it needs to redirect to the OAuth server and back—"strict" won’t send the cookie during that cross-site redirect.
 
-jobs:
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+## cookie accepts cookie name, path, and domain with out of bounds characters
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
+To fix the vulnerability, I ran `npm audit fix` then `npm audit fix --force` to get the updated version of the dependency.
 
-      - name: Install dependencies
-        run: npm install
+# Testing Tools
 
-      - name: Run security audit
-        run: npm audit
-```
+I used these tools for the security testing process:
 
-which runs once a week and check your dependencies with npm audit for security issues and reports any vulnerabilities if found. The results will show in your GitHub repository's "Actions" tab, if any vulnerabilities are found, it will show in the workflow logs.
+OWASP ZAP – An automated tool that performs various testing attacks to check for different vulnerabilities.
 
-Also added local command at package.json:
-`"security": "npm audit"`
-Which allows security checks to run locally by using:
-`npm run security`
+npm audit – An automated tool built into Node Package Manager. It scans project dependencies for outdated packages and known security vulnerabilities.
 
 # Lessons Learned
 
-There were several challenges I faced during this project:
+## What worked well:
 
-For Input Validation Implementation, before this course, I only knew how to use HTML or JavaScript to validate input. Using express-validator was new to me, so I had to read the documentation to figure out which methods to use and how to apply them to get the results I wanted.
+-Learned to understand different aspects of a threat model, like identifying critical assets and how attackers could potentially exploit the web app.
 
-For Output Encoding Implementation, this part was a bit easier because I built the web app using EJS, which escapes content by default when using <%= %> tags. This meant that any injected malicious code wouldn’t execute.
+-Creating the threat model diagram helped give a holistic view of how each type of attack and security measure affects different parts of the app, and how they all interact.
 
-For Encryption of Sensitive Data, I had to search online to understand how to set it up. At first, I couldn’t get the encryption to work — my web app kept throwing error messages. After a lot of debugging, I realized the problem was that I didn’t specify the AES type correctly, and my encryption key was missing 1 byte (it should have been 32 bytes, but mine was only 31 bytes).
+-Categorizing threats using the STRIDE framework made it easier to understand the different types of threats and their risks.
 
-For Third-Party Dependency Management, it was tough because GitHub Actions was new to me. I had to search the internet to learn how to set it up. The examples I found had a ton of features and settings, so I had to go through them carefully to figure out which ones were actually useful for my web app.
+-Using OWASP ZAP to automate security testing saved a lot of time compared to doing everything manually.
 
-After finishing this phase of the project, my security toolbox has expanded. I realized that there are a lot of powerful web security tools, but they aren’t always easy to set up. There are so many parameters to configure, and making everything work together can be frustrating. More than once, I had my web app working fine, but then adding a new security feature caused conflicts with the existing code, breaking the app. Alas, more often than not, the best way to solve these conflicts was to read the documentation carefully and have a lot of patience for trial and error.
+-Was able to perform manual tests like SQL injection and XSS to target specific areas of the web app.
+
+-ZAP provided detailed descriptions for any vulnerabilities found, which made fixing them a lot easier and took out a lot of the guesswork.
+
+## Challenges Faced:
+
+-Creating the threat model diagram took quite a bit of thinking, since many threats and security measures affect more than one part of the web app. Figuring out how to simplify those complex connections into a clear, easy-to-understand diagram was challenging.
+
+-Getting ZAP to install on Windows was a bit of a hassle. At first, Chrome flagged the download as risky and refused to complete it. I had to switch to Edge to get the file. Then during installation, it said it couldn’t find the Java Runtime Environment on my PC—even though I had already installed Java. Eventually, I got it working by installing Eclipse Temurin JDK.
+
+-Trying to fix vulnerabilities based on ZAP’s report was also challenging. The alerts came with good descriptions, but the documentation wasn’t the easiest to follow. There were a lot of technical terms and concepts that took time to understand.
+
+## Areas for Improvement
+
+-There are various settings in ZAP, and in the future, I would tweak them to test more aspects of the web app.
+
+-In the future, I would consider running other automated security testing tools, such as Burp Suite and Nmap, on the web app to check for vulnerabilities that might be missed by ZAP.
