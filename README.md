@@ -95,6 +95,10 @@ Advisory: https://github.com/advisories/GHSA-pxg6-pf52-xh8x
 
 # Vulnerability Fixes
 
+## Promote 'user' to 'superUser' when log-in count exceed 4
+
+We learned to escalate user privilege based on login count from ‘user’ to ‘superUser” from the course lab. But it turns out to be a significant vulnerability. So the login count-based user escalation was removed to secure the web app.
+
 ## Alert: Cookie without SameSite Attribute
 
 To fix the vulnerability, I added `sameSite: "lax"` to the cookie settings in app.js.
